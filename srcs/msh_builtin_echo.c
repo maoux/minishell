@@ -17,13 +17,16 @@ void				msh_builtin_echo(int ac, char **av)
 	unsigned int	i;
 	short int		n;
 
-	if (ac <= 1)
-		return ;
 	i = 1;
 	n = 1;
 	while (i < ac && ft_strequ(av[i], "-n"))
 	{
 		i += 1;
+		n = 0;
+	}
+	if (i == ac && n)
+	{
+		ft_putchar('\n');
 		n = 0;
 	}
 	while (i < ac)

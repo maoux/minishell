@@ -12,7 +12,6 @@
 
 #include "../includes/minishell.h"
 
-
 static int			msh_sizeofsplit(const char *s, char c, char spec)
 {
 	int				i;
@@ -29,14 +28,8 @@ static int			msh_sizeofsplit(const char *s, char c, char spec)
 			while (s[i] == c || s[i] == '\t')
 				i++;
 		}
-		else if (s[i] == '"')
-		{
-			i++;
-			while (s[i] != '"' && s[i] != '\0' && s[i] != spec)
-				i++;
-			i++;
-			ret++;
-		}
+		else if (s[i] == '"' || s[i] == '\'' || s[i] == '`')
+			msh_parse_quotes(s, spec, &i, &ret);
 		else
 		{
 			while (s[i] != c && s[i] != '\t' && s[i] != '\0' && s[i] != spec)
@@ -49,42 +42,34 @@ static int			msh_sizeofsplit(const char *s, char c, char spec)
 
 static char			**msh_split(const char *s, char c, char **tab, char spec)
 {
-	unsigned int	i;
-	unsigned int	j;
-	unsigned int	start;
+	t_split			spt;
 
-	i = 0;
-	j = 0;
-	if (s == NULL)
-		return (tab);
-	while (s[i] != '\0' && s[i] != spec)
+	spt.i = 0;
+	spt.j = 0;
+	spt.c = c;
+	spt.spec = spec;
+	while (s[spt.i] != '\0' && s[spt.i] != spec)
 	{
-		if (s[i] == c || s[i] == '\t')
-			while (s[i] == c || s[i] == '\t')
-				i++;
-		else if (s[i] == '"')
-		{
-			start = ++i;
-			while (s[i] != '"' && s[i] != '\0' && s[i] != spec)
-				i++;
-			tab[j] = ft_strsub(s, start, i - start);
-			i++;
-			j++;
-		}
+		if (s[spt.i] == c || s[spt.i] == '\t')
+			while (s[spt.i] == c || s[spt.i] == '\t')
+				spt.i++;
+		else if (s[spt.i] == '"' || s[spt.i] == '\'' || s[spt.i] == '`')
+			msh_split_quotes(&spt, tab, s);
 		else
 		{
-			start = i;
-			while (s[i] != c && s[i] != '\t' && s[i] != '\0' && s[i] != spec)
-				i++;
-			tab[j] = ft_strsub(s, start, i - start);
-			j++;
+			spt.start = spt.i;
+			while (s[spt.i] != c && s[spt.i] != '\t' &&
+				s[spt.i] != '\0' && s[spt.i] != spec)
+				spt.i++;
+			tab[spt.j++] = ft_strsub(s, spt.start, spt.i - spt.start);
 		}
-		tab[j] = NULL;
+		tab[spt.j] = NULL;
 	}
 	return (tab);
 }
 
-char				**msh_strsplit_spec(char const *s, int *ac, char c, char spec)
+char				**msh_strsplit_spec(char const *s, int *ac,
+											char c, char spec)
 {
 	char			**tab;
 	int				i;
@@ -100,7 +85,7 @@ char				**msh_strsplit_spec(char const *s, int *ac, char c, char spec)
 	tab = (char **)malloc(sizeof(char *) * (*ac) + 1);
 	if (tab == NULL)
 	{
-		ft_printf("minishell: Memory allocation failed in ft_strsplit\n");
+		ft_putendl_fd("minishell: Memory allocation failed in ft_strsplit", 2);
 		return (NULL);
 	}
 	tab = msh_split(s, c, tab, spec);

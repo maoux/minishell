@@ -36,6 +36,8 @@ void		msh_builtin_exit(t_shell *shell, int ac, char **av)
 
 	if (ac > 2)
 		ft_putendl_fd("exit: too many arguments.", 2);
+	else if (ac == 1)
+		shell->exit_builtin = 1;
 	else if (check_arg(av[1]) == 0)
 	{
 		ft_putstr_fd("exit: ", 2);

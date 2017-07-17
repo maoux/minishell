@@ -14,16 +14,16 @@
 
 static int			msh_handle_builtin(t_shell *shell, int argc, char **argv)
 {
-//	if (ft_strequ("cd", argv[0]))
-//		msh_builtin_cd(shell, argc, argv);
-	if (ft_strequ("echo", argv[0]))
+	if (ft_strequ("cd", argv[0]))
+		msh_builtin_cd(shell, argc, argv);
+	else if (ft_strequ("echo", argv[0]))
 		msh_builtin_echo(argc, argv);
 	else if (ft_strequ("setenv", argv[0]))
 		msh_builtin_setenv(shell, argc, argv);
-//	else if (ft_strequ("unsetenv", argv[0]))
-//		msh_builtin_unsetenv(shell, argc, argv);
-//	else if (ft_strequ("env", argv[0]))
-//		msh_builtin_env(shell, argc, argv);
+	else if (ft_strequ("unsetenv", argv[0]))
+		msh_builtin_unsetenv(shell, argc, argv);
+	else if (ft_strequ("env", argv[0]))
+		msh_builtin_env(shell, argc, argv);
 	else if (ft_strequ("exit", argv[0]))
 		msh_builtin_exit(shell, argc, argv);
 	else
@@ -53,11 +53,11 @@ static void			msh_inner_handle_line(t_shell *shell, int argc,
 											char **argv, char *next_command)
 {
 	if (argc <= 0)
-		next_command ? msh_handle_line(shell, next_command) : (0);
+		return ;
 	else if (msh_handle_builtin(shell, argc, argv) != -1)
 		;
-//	else
-//		msh_handle_command(shell, argv);
+	else
+		msh_handle_command(shell, argv);
 }
 
 void				msh_handle_line(t_shell *shell, char *command)
@@ -75,9 +75,10 @@ void				msh_handle_line(t_shell *shell, char *command)
 			return ;
 		}
 		argv = msh_parse_line(command, &next_command, &argc);
+		msh_replace_bslash(shell, argv, argc);
+		msh_replace_var(shell, argv, argc);
 		msh_inner_handle_line(shell, argc, argv, next_command);
 		msh_free_argv(argv);
 		next_command ? msh_handle_line(shell, next_command) : (0);
 	}
-	ft_strdel(&command);
 }

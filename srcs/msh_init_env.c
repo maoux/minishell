@@ -12,6 +12,21 @@
 
 #include "../includes/minishell.h"
 
+static size_t		sizeof_env(t_var_env *env)
+{
+	t_var_env		*tmp;
+	size_t			i;
+
+	i = 0;
+	tmp = env;
+	while (tmp != NULL)
+	{
+		tmp = tmp->next;
+		i++;
+	}
+	return (i);
+}
+
 void				msh_init_env(char **environ, t_shell *shell)
 {
 	char			*buffer;
@@ -39,4 +54,32 @@ void				msh_init_env(char **environ, t_shell *shell)
 		shell->env = msh_add_to_env(shell, "OLDPWD",
 								msh_get_var_env(shell->env, "PWD"));
 	ft_strdel(&buffer);
+}
+
+char				**msh_swapenv_to_char(t_var_env *env)
+{
+	char			**environ;
+	char			*tmp_char;
+	t_var_env		*tmp;
+	size_t			i;
+
+	i = sizeof_env(env);
+	if (i == 0)
+		return (NULL);
+	if (!(environ = (char **)malloc(sizeof(char *) * i + 1)))
+	{
+		ft_putendl_fd("minishell: memory allocation failed in swapenv", 2);
+		return (NULL);
+	}
+	tmp = env;
+	i = 0;
+	while (tmp != NULL)
+	{
+		tmp_char = ft_strjoin(tmp->name, "=");
+		environ[i++] = ft_strjoin(tmp_char, tmp->value);
+		ft_strdel(&tmp_char);
+		tmp = tmp->next;
+	}
+	environ[i] = NULL;
+	return (environ);
 }

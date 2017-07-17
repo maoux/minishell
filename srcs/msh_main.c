@@ -12,6 +12,12 @@
 
 #include "../includes/minishell.h"
 
+static void		msh_get_sigint_main(int sig)
+{
+	write(1, "\n", 1);
+	msh_signal_prompt();
+}
+
 static void		msh_main_loop(t_shell *shell)
 {
 	char		*command;
@@ -20,6 +26,7 @@ static void		msh_main_loop(t_shell *shell)
 	command = NULL;
 	while (TRUE)
 	{
+		signal(SIGINT, msh_get_sigint_main);
 		if (shell->exit_builtin)
 			break ;
 		msh_prompt(shell->env) ? ft_putstr("$>") : (0);
@@ -33,6 +40,7 @@ static void		msh_main_loop(t_shell *shell)
 			ft_putendl_fd(ERROR_GNL, 2);
 		else
 			msh_handle_line(shell, command);
+		ft_strdel(&command);
 	}
 }
 
